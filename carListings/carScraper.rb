@@ -8,7 +8,7 @@ require 'pry'
 require_relative 'listing'
 require_relative 'counties'
 
-def doneDealScraper
+def done_deal_scraper
   url = 'https://www.donedeal.ie/cars?sort=publishdatedesc&country=Ireland&year_from=2011&price_from=1000&price_to=12000'
   response = HTTParty.get(url)
   puts "Status: #{response.code}\n"
@@ -24,13 +24,16 @@ def doneDealScraper
     link = link['href']
 
     title = card.css('p[class^="Card__Title"]').text
-    # puts title
 
     # image
-    image_src = card.css('img')[0]['src']
-    # puts image_src
-    image_alt = card.css('img')[0]['alt']
-    # puts image_alt
+    if card.css('img').empty?
+      image_src = ''
+      image_alt = ''
+    else
+      image_src = card.css('img')[0]['src']
+      image_alt = card.css('img')[0]['alt']
+    end
+
     # Find the ul element with class "Card__KeyInfoList" and get all its li elements
     li_elements = card.css('ul[class^="Card__KeyInfoList"] li')
 
@@ -50,4 +53,4 @@ def doneDealScraper
   # end
 end
 
-doneDealScraper
+done_deal_scraper
