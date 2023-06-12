@@ -6,8 +6,9 @@ require 'nokogiri'
 require 'pry'
 
 require_relative 'listing'
-require_relative 'counties'
 require_relative 'km_convert'
+
+$cars = []
 
 def done_deal_scraper
   url = 'https://www.donedeal.ie/cars?sort=publishdatedesc&country=Ireland&year_from=2012&price_from=1000&price_to=12000'
@@ -42,9 +43,22 @@ def done_deal_scraper
 
     price = card.css('p[class^="Card__InfoText"]').text[/\A€\d+(,\d{3})*(\.\d{1,2})?\b/]
 
-    puts Listing.new(title, image_src, image_alt, price, link, year, engine, mileage, posted, county)
-    puts "\n\n"
+    c = Listing.new(title, image_src, image_alt, price, link, year, engine, mileage, posted, county)
+
+    $cars << c
   end
 end
 
-done_deal_scraper
+if __FILE__ == $PROGRAM_NAME
+  done_deal_scraper
+
+  # Sort CARS array based on rank in descending order
+  sorted_cars = $cars.sort_by { |car| -car.calculate_rank }
+
+  # Print each listing
+  sorted_cars.each do |car|
+    puts car
+    puts '-' * 50
+    puts ''
+  end
+end
