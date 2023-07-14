@@ -1,3 +1,3 @@
 # lemons
 
-A Ruby script to help me find a new car
+A Ruby script to scrape used car ads and rank them
