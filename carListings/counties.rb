@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Counties
   COUNTY_DISTANCES = {
     'Sligo' => 0,
@@ -33,7 +35,7 @@ module Counties
     COUNTY_DISTANCES[county] || Float::INFINITY
   end
 
-  def sort_counties_by_distance_from_ballisodare(counties)
-    counties.sort_by { |county| distance_from_ballisodare(county) }
+  def sort_counties_by_distance_from_home(counties)
+    counties.sort_by { |county| distance_from_home(county) }
   end
 end

@@ -1,18 +1,18 @@
 # frozen_string_literal: true
+
 require_relative 'counties'
 
 class Listing
-
-include Counties
+  include Counties
 
   @@weights = {
     make: 0.2,
     model: 0.2,
     year: 0.5,
-    mileage: 0.3,
-    price: 0.4,
+    mileage: 0.4,
+    price: 0.6,
     engine: 0.2,
-    county: 0.1
+    county: 0.2
   }
 
   IDEAL_ENGINE_RANGE = (1.2..1.6).freeze
@@ -27,23 +27,23 @@ include Counties
     @engine_size, @engine_type = parse_engine(engine)
     @mileage = adjust_mileage(mileage)
     @posted = posted
-    @county = county.split("\s").last
+    @county = parse_county(county)
     @rank = calculate_rank
   end
 
   def to_s
-    "Rank: #{rank}\n#{title}\n#{year}, #{engine_size} #{engine_type}\n#{formatted_mileage}\n#{formatted_price}\n#{county}\n#{link}\n\n"
+    "Rank: #{rank}\n#{title}\n#{year}, #{engine_size} #{engine_type}\n#{formatted_mileage}\n#{formatted_price}\n#{county}\n#{link}\n"
   end
 
   def calculate_rank
     @rank = (@year * @@weights[:year]) +
-            (raw_milage * @@weights[:mileage]) +
+            ((1_000_000 - raw_milage) * @@weights[:mileage]) +
             (price_weight * @@weights[:price]) +
             (engine_weight * @@weights[:engine]) +
             (county_weight * @@weights[:county])
   end
 
-  # private
+  private
 
   def parse_engine(engine)
     engine_parts = engine.split(' ')
@@ -59,7 +59,7 @@ include Counties
   end
 
   def formatted_price
-    @price.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse
+    "€#{@price.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse}"
   end
 
   def formatted_mileage
@@ -93,12 +93,19 @@ include Counties
   end
 
   def county_weight
-    sligo_counties = %{Sligo Mayo Leitrim Donegal}
+    sligo_counties = %(Sligo Mayo Leitrim Donegal)
     if sligo_counties.include?(@county)
       1.0
     else
-      # binding.pry
-      1.0 - (0.1 * 0 - Counties::distance_from_home(@county)).abs
+      1.0 - (0.1 * 0 - Counties.distance_from_home(@county)).abs
+    end
+  end
+
+  def parse_county(county)
+    if county =~ /^Co.\s?.*/i
+      county.split("\s").last
+    else
+      'Dublin'
     end
   end
 

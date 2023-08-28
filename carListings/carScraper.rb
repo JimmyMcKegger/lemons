@@ -4,14 +4,15 @@
 require 'httparty'
 require 'nokogiri'
 require 'pry'
+require 'dotenv'
+Dotenv.load
 
 require_relative 'listing'
 require_relative 'km_convert'
 
 $cars = []
-
-def done_deal_scraper
-  url = 'https://www.donedeal.ie/cars?sort=publishdatedesc&country=Ireland&year_from=2012&price_from=1000&price_to=12000'
+def scraper
+  url = "https://#{ENV['BASE_URL']}/cars?sort=publishdatedesc&country=Ireland&year_from=2012&price_from=1000&price_to=12000"
   response = HTTParty.get(url)
   puts "Status: #{response.code}\n"
   page = Nokogiri::HTML(response.body)
@@ -37,8 +38,9 @@ def done_deal_scraper
 
     li_elements = card.css('ul[class^="Card__KeyInfoList"] li')
 
-    year, engine, mileage, posted, county = li_elements.map { |li| li.text.strip }
-
+    year, engine, mileage, posted, county = li_elements.map do |li|
+      li.text.strip
+    end
     mileage = km_convert(mileage) if mileage =~ /mi\z/
 
     price = card.css('p[class^="Card__InfoText"]').text[/\A€\d+(,\d{3})*(\.\d{1,2})?\b/]
@@ -50,15 +52,13 @@ def done_deal_scraper
 end
 
 if __FILE__ == $PROGRAM_NAME
-  done_deal_scraper
+  scraper
 
   # Sort CARS array based on rank in descending order
   sorted_cars = $cars.sort_by { |car| -car.calculate_rank }
 
   # Print each listing
   sorted_cars.each do |car|
-    puts car
-    puts '-' * 50
-    puts ''
+    puts "\n#{car}\n#{'-' * 50}"
   end
 end
