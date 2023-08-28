@@ -1,3 +1,3 @@
 # lemons
 
-A Ruby script to help me find a new car
+A Ruby script to find a new car
